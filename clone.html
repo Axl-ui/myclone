@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatGPT Clone</title>
+    <!-- Include Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* General Styles */
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            color: #fff;
+            background: linear-gradient(135deg, #1e1e1e, #0c0c0c);
+            overflow-x: hidden;
+        }
+
+        .background-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle, #2a2a2a, transparent 70%);
+            animation: pulse-bg 6s infinite alternate;
+        }
+
+        @keyframes pulse-bg {
+            0% {
+                background: radial-gradient(circle, #2a2a2a, transparent 70%);
+            }
+            100% {
+                background: radial-gradient(circle, #3a3a3a, transparent 70%);
+            }
+        }
+
+        .container-fluid {
+            display: flex;
+            min-height: 100vh;
+            flex-wrap: nowrap;
+            overflow: hidden;
+            padding: 0;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: linear-gradient(135deg, #161616, #1c1c1c);
+            padding: 30px;
+            box-shadow: 2px 0 15px rgba(0, 0, 0, 0.9);
+            position: fixed;
+            top: 0;
+            left: -280px;
+            height: 100%;
+            overflow-y: auto;
+            transition: left 0.4s ease, transform 0.3s ease;
+            z-index: 9999;
+        }
+
+        .sidebar.open {
+            left: 0;
+            transform: translateX(0);
+        }
+
+        .sidebar h2 {
+            font-size: 2.5rem;
+            color: #00f0ff;
+            margin-bottom: 30px;
+            text-align: center;
+            text-shadow: 3px 3px 20px rgba(0, 0, 0, 0.9);
+            letter-spacing: 2px;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar ul li a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #ccc;
+            font-size: 1.2em;
+            padding: 12px;
+            margin-bottom: 12px;
+            text-decoration: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .sidebar ul li a:hover {
+            background: #00f0ff;
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+            transform: translateX(10px);
+        }
+
+        .sidebar .extra-links ul {
+            margin-top: 40px;
+        }
+
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .footer a {
+            color: #00f0ff;
+            text-decoration: none;
+            font-size: 1.1em;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            flex-grow: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transition: margin-left 0.3s ease, transform 0.3s ease;
+        }
+
+        .main-content.centered {
+            margin-left: 0;
+        }
+
+        /* Typing Animation */
+        @keyframes typing {
+            0% {
+                width: 0;
+            }
+            100% {
+                width: 100%;
+            }
+        }
+
+        .main-content h1 {
+            font-size: 3rem;
+            color: #00f0ff;
+            text-shadow: 0 0 10px #00f0ff, 0 0 30px #00f0ff;
+            animation: pulse 2.5s infinite, typing 3s steps(30) 1s forwards, fadeIn 3s ease-out;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                text-shadow: 0 0 10px #00f0ff, 0 0 20px #00f0ff;
+            }
+            50% {
+                text-shadow: 0 0 20px #00f0ff, 0 0 40px #00f0ff;
+            }
+        }
+
+        .chat-area {
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+            border-radius: 12px;
+            background: linear-gradient(145deg, #202020, #292929);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9), inset 0 3px 8px rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .chat-area:hover {
+            transform: scale(1.05);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.9), inset 0 5px 10px rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-area input {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            background-color: #292929;
+            color: #fff;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.7);
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+        .chat-area input:focus {
+            outline: none;
+            background-color: #333;
+            box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.9);
+        }
+
+        .chat-area .buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .chat-area .buttons button {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: #00f0ff;
+            color: #fff;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 240, 255, 0.3);
+            transition: transform 0.2s, box-shadow 0.3s, background-color 0.3s;
+        }
+
+        .chat-area .buttons button:hover {
+            transform: translateY(-3px);
+            background-color: #0088b3;
+            box-shadow: 0 8px 20px rgba(0, 240, 255, 0.6);
+        }
+
+        /* Floating Chat Widget */
+        .floating-widget {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            background-color: #00f0ff;
+            color: #000;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s, animation 0.5s ease-in-out;
+            animation: pulse 1.5s infinite alternate;
+        }
+
+        .floating-widget:hover {
+            transform: scale(1.1);
+            box-shadow: 0 10px 20px rgba(0, 240, 255, 0.6);
+        }
+
+        /* Sidebar Toggle Button */
+        .sidebar-toggle {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: #00f0ff;
+            color: #000;
+            border: none;
+            padding: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s, background-color 0.3s;
+            z-index: 99999;
+        }
+
+        .sidebar-toggle:hover {
+            background-color: #0088b3;
+            transform: scale(1.1);
+        }
+
+        /* Responsive Design */
+        @media screen and (max-width: 768px) {
+            .sidebar {
+                left: -250px;
+                width: 230px;
+            }
+
+            .sidebar.open {
+                left: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+
+            .main-content h1 {
+                font-size: 2rem;
+            }
+
+            .chat-area {
+                width: 100%;
+                padding: 15px;
+            }
+
+            .sidebar-toggle {
+                display: block;
+            }
+
+            .floating-widget {
+                right: 10px;
+                bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background Animation -->
+    <div class="background-animation"></div>
+
+    <div class="container-fluid">
+        <!-- Sidebar -->
+        <nav class="sidebar open">
+            <h2>&emsp;ChatAXL</h2>
+            <ul>
+                <li><a href="#">Learn how to Code</a></li>
+                <li><a href="#">Make Money Online</a></li>
+                <li><a href="#">Summarize Lessons</a></li>
+                <li><a href="#">Best Movies</a></li>
+                <li><a href="#">Rock Songs</a></li>
+            </ul>
+            <div class="extra-links">
+                <h3>More</h3>
+                <ul>
+                    <li><a href="#">Settings</a></li>
+                    <li><a href="#">Help</a></li>
+                    <li><a href="#">Feedback</a></li>
+                </ul>
+            </div>
+            <div class="footer">
+                <a href="#">Upgrade Plan</a>
+            </div>
+        </nav>
+
+        <!-- Sidebar Toggle Button -->
+        <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <h1>What Can I Help With?</h1>
+            <div class="chat-area">
+                <input type="text" placeholder="Type a message...">
+                <div class="buttons">
+                    <button>Create Image</button>
+                    <button>Get Advice</button>
+                    <button>Summarize Text</button>
+                    <button>Analyze Images</button>
+                    <button>Code</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Chat Widget -->
+    <div class="floating-widget">
+        <span>🗨️</span>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Function to toggle the sidebar
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const mainContent = document.querySelector('.main-content');
+            
+            sidebar.classList.toggle('open');
+            
+            // Toggle 'centered' class to adjust the margin of the main content
+            if (sidebar.classList.contains('open')) {
+                mainContent.classList.remove('centered');
+            } else {
+                mainContent.classList.add('centered');
+            }
+        }
+    </script>
+</body>
+</html>
